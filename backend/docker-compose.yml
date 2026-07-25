@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: carteira-financeira-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DATABASE_USER:-carteira}
+      POSTGRES_PASSWORD: ${DATABASE_PASSWORD:-carteira}
+      POSTGRES_DB: ${DATABASE_NAME:-carteira_financeira}
+    ports:
+      - '5432:5432'
+    volumes:
+      - carteira-financeira-data:/var/lib/postgresql/data
+
+volumes:
+  carteira-financeira-data:
