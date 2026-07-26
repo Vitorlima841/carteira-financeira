@@ -1,9 +1,7 @@
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModuleOptions } from '@nestjs/typeorm';
 
-export const configuracaoBancoDados = (
-  configService: ConfigService,
-): TypeOrmModuleOptions => ({
+export const configuracaoBancoDados = (configService: ConfigService): TypeOrmModuleOptions => ({
   type: 'postgres',
   host: configService.get<string>('banco.host'),
   port: configService.get<number>('banco.porta'),
@@ -11,5 +9,7 @@ export const configuracaoBancoDados = (
   password: configService.get<string>('banco.senha'),
   database: configService.get<string>('banco.nome'),
   autoLoadEntities: true,
-  synchronize: configService.get<string>('ambiente') !== 'production',
+  synchronize: false,
+  migrations: [__dirname + '/../migrations/*{.ts,.js}'],
+  migrationsRun: false,
 });
