@@ -8,6 +8,7 @@ export const configuracaoBancoDados = (configService: ConfigService): TypeOrmMod
   username: configService.get<string>('banco.usuario'),
   password: configService.get<string>('banco.senha'),
   database: configService.get<string>('banco.nome'),
+  entities: [__dirname + '/../../model/**/*.entity{.ts,.js}'],
   autoLoadEntities: true,
   synchronize: false,
   migrations: [__dirname + '/../migrations/*{.ts,.js}'],

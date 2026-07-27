@@ -1,14 +1,26 @@
 import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
+import Decimal from 'decimal.js';
+import { EntityManager } from 'typeorm';
+import { Conta } from '../../model/conta/conta.entity';
+import { CriarUsuarioDto } from '../../model/usuario/DTO/criar-usuario.dto';
 import { DadosCriarUsuario } from '../../model/usuario/interface/dados-criar-usuario.interface';
 import { EmailJaCadastradoError } from '../../model/usuario/error/email-ja-cadastrado.error';
 import { UsuarioNaoEncontradoError } from '../../model/usuario/error/usuario-nao-encontrado.error';
 import {Usuario} from "../../model/usuario/usuario.entity";
+import { ContaRepositorioTypeOrm } from '../../repository/conta.repository';
 import { UsuarioRepositorioTypeOrm } from '../../repository/usuario.repository';
+import { UnidadeTrabalhoService } from '../../shared/database/unidade-trabalho.service';
+import { ConstantUtils } from '../../shared/utils/constant.utils';
 
 @Injectable()
 export class UsuariosService {
-  constructor(private readonly usuarioRepositorio: UsuarioRepositorioTypeOrm) {}
+  constructor(
+    private readonly usuarioRepositorio: UsuarioRepositorioTypeOrm,
+    private readonly contaRepositorio: ContaRepositorioTypeOrm,
+    private readonly unidadeTrabalho: UnidadeTrabalhoService,
+  ) {}
 
   async buscarUsuarioLogado(usuarioId: string): Promise<Usuario> {
     const usuario = await this.usuarioRepositorio.buscarPorId(usuarioId);
@@ -18,8 +30,26 @@ export class UsuariosService {
     return usuario;
   }
 
-  async criarUsuario(usuarioRepositorio: UsuarioRepositorioTypeOrm, dados: DadosCriarUsuario): Promise<Usuario> {
-    const usuarioExistente = await usuarioRepositorio.buscarPorEmail(dados.email);
+  async cadastrar(criarUsuarioDto: CriarUsuarioDto): Promise<Usuario> {
+    const senhaHash = await bcrypt.hash(criarUsuarioDto.senha, ConstantUtils.ROUNDS_SALT_SENHA);
+
+    return this.criarComConta({
+      nome: criarUsuarioDto.nome,
+      email: criarUsuarioDto.email,
+      senhaHash,
+    });
+  }
+
+  async criarComConta(dados: DadosCriarUsuario): Promise<Usuario> {
+    return this.unidadeTrabalho.executar(async (manager) => {
+      const usuario = await this.criarUsuario(dados, manager);
+      await this.criarConta(usuario.id, manager);
+      return usuario;
+    });
+  }
+
+  async criarUsuario(dados: DadosCriarUsuario, manager?: EntityManager): Promise<Usuario> {
+    const usuarioExistente = await this.usuarioRepositorio.buscarPorEmail(dados.email, manager);
     if (usuarioExistente) {
       throw new EmailJaCadastradoError(dados.email);
     }
@@ -34,7 +64,22 @@ export class UsuariosService {
     usuario.criadoEm = agora;
     usuario.atualizadoEm = agora;
 
-    await usuarioRepositorio.salvar(usuario);
+    await this.usuarioRepositorio.salvar(usuario, manager);
     return usuario;
+  }
+
+  private async criarConta(usuarioId: string, manager?: EntityManager): Promise<Conta> {
+    const agora = new Date();
+    const conta = new Conta();
+
+    conta.id = randomUUID();
+    conta.usuarioId = usuarioId;
+    conta.saldoCache = new Decimal(0).toFixed(ConstantUtils.ESCALA_MONETARIA);
+    conta.moeda = ConstantUtils.MOEDA_PADRAO;
+    conta.criadoEm = agora;
+    conta.atualizadoEm = agora;
+
+    await this.contaRepositorio.salvar(conta, manager);
+    return conta;
   }
 }

@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { EntityManager, Repository } from 'typeorm';
 import {Usuario} from '../model/usuario/usuario.entity';
 
 @Injectable()
@@ -10,18 +10,22 @@ export class UsuarioRepositorioTypeOrm {
     private readonly repositorioOrm: Repository<Usuario>,
   ) {}
 
-  async buscarPorId(id: string): Promise<Usuario | null> {
-    const entidadeOrm = await this.repositorioOrm.findOne({ where: { id } });
+  async buscarPorId(id: string, manager?: EntityManager): Promise<Usuario | null> {
+    const entidadeOrm = await this.obterRepositorio(manager).findOne({ where: { id } });
     return entidadeOrm ? this.paraDominio(entidadeOrm) : null;
   }
 
-  async buscarPorEmail(email: string): Promise<Usuario | null> {
-    const entidadeOrm = await this.repositorioOrm.findOne({ where: { email } });
+  async buscarPorEmail(email: string, manager?: EntityManager): Promise<Usuario | null> {
+    const entidadeOrm = await this.obterRepositorio(manager).findOne({ where: { email } });
     return entidadeOrm ? this.paraDominio(entidadeOrm) : null;
   }
 
-  async salvar(usuario: Usuario): Promise<void> {
-    await this.repositorioOrm.save(this.paraOrm(usuario));
+  async salvar(usuario: Usuario, manager?: EntityManager): Promise<void> {
+    await this.obterRepositorio(manager).save(this.paraOrm(usuario));
+  }
+
+  private obterRepositorio(manager?: EntityManager): Repository<Usuario> {
+    return manager ? manager.getRepository(Usuario) : this.repositorioOrm;
   }
 
   private paraDominio(entidadeOrm: Usuario): Usuario {

@@ -1,10 +1,5 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm';
+import { Column, CreateDateColumn, Entity, OneToOne, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm';
+import { Conta } from '../conta/conta.entity';
 
 @Entity('usuarios')
 export class Usuario {
@@ -25,4 +20,7 @@ export class Usuario {
 
   @UpdateDateColumn({ name: 'atualizado_em' })
   atualizadoEm: Date;
+
+  @OneToOne(() => Conta, (conta) => conta.usuario)
+  conta: Conta;
 }

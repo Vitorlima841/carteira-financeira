@@ -1,79 +1,68 @@
-import { BadRequestException, Inject, Injectable } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { CACHE_MANAGER } from "@nestjs/cache-manager";
-import { Cache } from "cache-manager";
-import { Response, Request } from "express";
-import { AuthDTO } from "../../shared/model/auth/auth.dto";
-import { MessageUtil } from "../../shared/util/message.util";
-import { ConstantUtil } from "../../shared/util/constant.util";
+import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { CookieOptions, Response } from 'express';
+import { AuthDto } from '../../model/auth/DTO/auth.dto';
+import { RespostaAutenticacaoDto } from '../../model/auth/DTO/resposta-autenticacao.dto';
+import { CredenciaisInvalidasError } from '../../model/auth/error/credenciais-invalidas.error';
+import { PayloadJwt } from '../../model/auth/interface/payload-jwt.interface';
+import { Usuario } from '../../model/usuario/usuario.entity';
+import { UsuarioRepositorioTypeOrm } from '../../repository/usuario.repository';
+import { ConstantUtils } from '../../shared/utils/constant.utils';
 
 @Injectable()
 export class AuthService {
   constructor(
+    private readonly usuarioRepositorio: UsuarioRepositorioTypeOrm,
     private readonly jwtService: JwtService,
-    @Inject(CACHE_MANAGER) private cacheManager: Cache,
-    private readonly userService: UserService,
+    private readonly configService: ConfigService,
   ) {}
 
-  async login(dto: AuthDTO, res: Response): Promise<Response> {
-    const { sessionId, userGroup, contractNumber, partnerName } = await this.validateUser(dto);
-    let payload;
-    if (dto.isAdmin) {
-      payload = { username: dto.username, userGroup: userGroup }
-    } else {
-      await this.processLoginByContract(contractNumber, partnerName);
-      payload = { username: dto.username, contractNumber: contractNumber }
+  async autenticar(authDto: AuthDto, resposta: Response): Promise<RespostaAutenticacaoDto> {
+    const usuario = await this.validarUsuario(authDto.email, authDto.senha);
+
+    const payload: PayloadJwt = { sub: usuario.id, email: usuario.email };
+    const tokenAcesso = this.jwtService.sign(payload);
+    const expiraEm = this.obterExpiracao(tokenAcesso);
+
+    resposta.cookie(ConstantUtils.JWT_TOKEN, tokenAcesso, {
+      ...this.opcoesCookie(),
+      expires: expiraEm,
+    });
+
+    return RespostaAutenticacaoDto.apartirDoDominio(usuario, tokenAcesso, expiraEm);
+  }
+
+  desconectar(resposta: Response): void {
+    resposta.clearCookie(ConstantUtils.JWT_TOKEN, this.opcoesCookie());
+  }
+
+  async validarUsuario(email: string, senha: string): Promise<Usuario> {
+    const usuario = await this.usuarioRepositorio.buscarPorEmail(email);
+    if (!usuario) {
+      throw new CredenciaisInvalidasError();
     }
-    const jwt = this.jwtService.sign(payload);
-    const sankhyaMemory = {
-      auth: dto,
-      jSessionId: sessionId,
-    };
-    await this.cacheManager.set(dto.username, sankhyaMemory);
-    res.cookie(ConstantUtil.JWT_TOKEN, jwt, {
-      path: "/",
-      secure: false,
+
+    const senhaValida = await bcrypt.compare(senha, usuario.senhaHash);
+    if (!senhaValida) {
+      throw new CredenciaisInvalidasError();
+    }
+
+    return usuario;
+  }
+
+  private opcoesCookie(): CookieOptions {
+    return {
+      path: ConstantUtils.CAMINHO_COOKIE,
       httpOnly: true,
-      sameSite: false,
-    });
-    return res.status(200).send({
-      username: dto.username,
-    });
+      secure: this.configService.get<string>('ambiente') === 'production',
+      sameSite: 'lax',
+    };
   }
 
-  async validateUser(dto: AuthDTO): Promise<any> {
-    try {
-      return await this.sankhyaService.doLogin(dto);
-    } catch (error) {
-      throw new BadRequestException(error.message ?? MessageUtil.VALIDATE_USER_FAILURE);
-    }
-  }
-
-  async logout(req: Request, res: Response) {
-    try {
-      if (req["user"] && req["user"].username) {
-        await this.cacheManager.del(req["user"].username);
-      }
-    } finally {
-      res.clearCookie(ConstantUtil.JWT_TOKEN, { path: "/" });
-      res.status(200).send();
-    }
-  }
-
-  async checkToken(token: string) {
-    try {
-      return this.jwtService.verify(token.replace("Bearer ", ""));
-    } catch (err) {
-      throw err;
-    }
-  }
-
-  async processLoginByContract(contractNumber: number, partnerName: string) {
-    const user: UserEntity | null = await this.userService.getUserById(contractNumber);
-    if (user) {
-      await this.userService.updateLastAccess(user.id);
-      return;
-    }
-    await this.userService.saveUserLoggedIn(contractNumber, partnerName);
+  private obterExpiracao(token: string): Date {
+    const { exp } = this.jwtService.decode(token) as { exp: number };
+    return new Date(exp * 1000);
   }
 }
