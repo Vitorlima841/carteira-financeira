@@ -6,7 +6,7 @@ import {
   UsuarioAutenticado,
 } from '../shared/decorators/usuario-atual.decorator';
 import { UsuariosService } from '../service/usuarios.service';
-import { UsuarioRespostaDto } from '../model/usuario/usuario-resposta.dto';
+import { UsuarioRespostaDto } from '../model/usuario/DTO/usuario-resposta.dto';
 
 @ApiTags('Usuários')
 @ApiBearerAuth()

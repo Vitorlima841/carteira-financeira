@@ -9,11 +9,6 @@ import {
 import { Response } from 'express';
 import { ErroDominio } from '../errors/erro-dominio';
 
-/**
- * Mapa de código de erro de domínio para status HTTP correspondente.
- * Novos erros de domínio só precisam ser adicionados aqui, sem alterar
- * o restante do filtro (Open/Closed Principle).
- */
 const MAPA_CODIGO_PARA_STATUS: Record<string, HttpStatus> = {
   SALDO_INSUFICIENTE: HttpStatus.UNPROCESSABLE_ENTITY,
   CONTA_NAO_ENCONTRADA: HttpStatus.NOT_FOUND,
@@ -28,10 +23,6 @@ const MAPA_CODIGO_PARA_STATUS: Record<string, HttpStatus> = {
   USUARIO_NAO_ENCONTRADO: HttpStatus.NOT_FOUND,
 };
 
-/**
- * Filtro global de exceções: traduz erros de domínio e exceções do Nest
- * em respostas HTTP consistentes, com mensagens em português.
- */
 @Catch()
 export class FiltroExcecaoHttp implements ExceptionFilter {
   private readonly logger = new Logger('ExcecaoHttp');

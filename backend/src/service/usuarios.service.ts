@@ -1,20 +1,14 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import {
-  IUsuarioRepositorio,
-  USUARIO_REPOSITORIO,
-} from '../model/usuario/usuario.repositorio.interface';
-import { DadosCriarUsuario } from '../model/usuario/dados-criar-usuario.interface';
-import { EmailJaCadastradoError } from '../model/usuario/email-ja-cadastrado.error';
-import { UsuarioNaoEncontradoError } from '../model/usuario/usuario-nao-encontrado.error';
+import { DadosCriarUsuario } from '../model/usuario/interface/dados-criar-usuario.interface';
+import { EmailJaCadastradoError } from '../model/usuario/error/email-ja-cadastrado.error';
+import { UsuarioNaoEncontradoError } from '../model/usuario/error/usuario-nao-encontrado.error';
 import {Usuario} from "../model/usuario/usuario.entity";
+import { UsuarioRepositorioTypeOrm } from '../repository/usuario.repository';
 
 @Injectable()
 export class UsuariosService {
-  constructor(
-    @Inject(USUARIO_REPOSITORIO)
-    private readonly usuarioRepositorio: IUsuarioRepositorio,
-  ) {}
+  constructor(private readonly usuarioRepositorio: UsuarioRepositorioTypeOrm) {}
 
   async buscarUsuarioLogado(usuarioId: string): Promise<Usuario> {
     const usuario = await this.usuarioRepositorio.buscarPorId(usuarioId);
@@ -24,7 +18,7 @@ export class UsuariosService {
     return usuario;
   }
 
-  async criarUsuario(usuarioRepositorio: IUsuarioRepositorio, dados: DadosCriarUsuario): Promise<Usuario> {
+  async criarUsuario(usuarioRepositorio: UsuarioRepositorioTypeOrm, dados: DadosCriarUsuario): Promise<Usuario> {
     const usuarioExistente = await usuarioRepositorio.buscarPorEmail(dados.email);
     if (usuarioExistente) {
       throw new EmailJaCadastradoError(dados.email);

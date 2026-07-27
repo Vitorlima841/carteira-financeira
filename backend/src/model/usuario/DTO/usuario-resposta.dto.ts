@@ -1,10 +1,6 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {Usuario} from "./usuario.entity";
+import {Usuario} from "../usuario.entity";
 
-/**
- * Representação pública de um usuário, sem dados sensíveis
- * (nunca expõe `senhaHash`).
- */
 export class UsuarioRespostaDto {
   @ApiProperty({ description: 'Identificador único do usuário' })
   id: string;
