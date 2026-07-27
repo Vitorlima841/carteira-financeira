@@ -1,16 +1,14 @@
 import { Injectable } from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
-import Decimal from 'decimal.js';
 import { EntityManager } from 'typeorm';
-import { Conta } from '../../model/conta/conta.entity';
 import { CriarUsuarioDto } from '../../model/usuario/DTO/criar-usuario.dto';
 import { DadosCriarUsuario } from '../../model/usuario/interface/dados-criar-usuario.interface';
 import { EmailJaCadastradoError } from '../../model/usuario/error/email-ja-cadastrado.error';
 import { UsuarioNaoEncontradoError } from '../../model/usuario/error/usuario-nao-encontrado.error';
 import {Usuario} from "../../model/usuario/usuario.entity";
-import { ContaRepositorioTypeOrm } from '../../repository/conta.repository';
 import { UsuarioRepositorioTypeOrm } from '../../repository/usuario.repository';
+import { ContaService } from '../conta/conta.service';
 import { UnidadeTrabalhoService } from '../../shared/database/unidade-trabalho.service';
 import { ConstantUtils } from '../../shared/utils/constant.utils';
 
@@ -18,7 +16,7 @@ import { ConstantUtils } from '../../shared/utils/constant.utils';
 export class UsuariosService {
   constructor(
     private readonly usuarioRepositorio: UsuarioRepositorioTypeOrm,
-    private readonly contaRepositorio: ContaRepositorioTypeOrm,
+    private readonly contaService: ContaService,
     private readonly unidadeTrabalho: UnidadeTrabalhoService,
   ) {}
 
@@ -43,7 +41,7 @@ export class UsuariosService {
   async criarComConta(dados: DadosCriarUsuario): Promise<Usuario> {
     return this.unidadeTrabalho.executar(async (manager) => {
       const usuario = await this.criarUsuario(dados, manager);
-      await this.criarConta(usuario.id, manager);
+      await this.contaService.criarParaUsuario(usuario.id, manager);
       return usuario;
     });
   }
@@ -66,20 +64,5 @@ export class UsuariosService {
 
     await this.usuarioRepositorio.salvar(usuario, manager);
     return usuario;
-  }
-
-  private async criarConta(usuarioId: string, manager?: EntityManager): Promise<Conta> {
-    const agora = new Date();
-    const conta = new Conta();
-
-    conta.id = randomUUID();
-    conta.usuarioId = usuarioId;
-    conta.saldoCache = new Decimal(0).toFixed(ConstantUtils.ESCALA_MONETARIA);
-    conta.moeda = ConstantUtils.MOEDA_PADRAO;
-    conta.criadoEm = agora;
-    conta.atualizadoEm = agora;
-
-    await this.contaRepositorio.salvar(conta, manager);
-    return conta;
   }
 }
