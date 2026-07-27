@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { randomUUID } from 'crypto';
-import { DadosCriarUsuario } from '../model/usuario/interface/dados-criar-usuario.interface';
-import { EmailJaCadastradoError } from '../model/usuario/error/email-ja-cadastrado.error';
-import { UsuarioNaoEncontradoError } from '../model/usuario/error/usuario-nao-encontrado.error';
-import {Usuario} from "../model/usuario/usuario.entity";
-import { UsuarioRepositorioTypeOrm } from '../repository/usuario.repository';
+import { DadosCriarUsuario } from '../../model/usuario/interface/dados-criar-usuario.interface';
+import { EmailJaCadastradoError } from '../../model/usuario/error/email-ja-cadastrado.error';
+import { UsuarioNaoEncontradoError } from '../../model/usuario/error/usuario-nao-encontrado.error';
+import {Usuario} from "../../model/usuario/usuario.entity";
+import { UsuarioRepositorioTypeOrm } from '../../repository/usuario.repository';
 
 @Injectable()
 export class UsuariosService {

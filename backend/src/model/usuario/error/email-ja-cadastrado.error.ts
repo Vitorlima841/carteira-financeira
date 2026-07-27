@@ -1,4 +1,4 @@
-import { ErroDominio } from '../../shared/errors/erro-dominio';
+import { ErroDominio } from '../../../shared/errors/erro-dominio';
 
 export class EmailJaCadastradoError extends ErroDominio {
   readonly codigo = 'EMAIL_JA_CADASTRADO';

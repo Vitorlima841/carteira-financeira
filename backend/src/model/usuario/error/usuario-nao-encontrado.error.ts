@@ -1,4 +1,4 @@
-import { ErroDominio } from '../../shared/errors/erro-dominio';
+import { ErroDominio } from '../../../shared/errors/erro-dominio';
 
 export class UsuarioNaoEncontradoError extends ErroDominio {
   readonly codigo = 'USUARIO_NAO_ENCONTRADO';
