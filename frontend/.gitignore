@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+build
+next-env.d.ts
+*.log
+.env
+.env
+coverage
+playwright-report
+test-results
+.DS_Store
+.claude
+/.idea
