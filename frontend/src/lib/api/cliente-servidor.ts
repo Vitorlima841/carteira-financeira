@@ -1,9 +1,8 @@
 import axios, { type AxiosInstance } from 'axios';
 import { cookies } from 'next/headers';
+import { NOME_COOKIE_SESSAO } from '@/constants/sessao';
 import { TEMPO_LIMITE_REQUISICAO_MS, obterUrlApiServidor } from './config';
 import { converterParaErroApi } from './erros';
-
-export const NOME_COOKIE_SESSAO = process.env.SESSION_COOKIE_NAME ?? 'jwt_token';
 
 export async function obterTokenSessao(): Promise<string | undefined> {
   try {

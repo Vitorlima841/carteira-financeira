@@ -2,7 +2,7 @@
 
 Interface web da carteira financeira digital, construída em **Next.js (App Router) + React + TypeScript + Tailwind CSS**, consumindo a API **NestJS** do diretório `backend/`.
 
-> Estado atual: **infraestrutura base** pronta (cliente HTTP, tipos espelhando os DTOs do backend, React Query e design system em `components/ui`). Nenhuma tela ou fluxo de domínio foi implementado ainda — pastas ainda vazias são versionadas via `.gitkeep`.
+> Estado atual: **infraestrutura base** pronta (cliente HTTP, tipos espelhando os DTOs do backend, React Query e design system em `components/ui`) e **fluxo de autenticação** implementado (cadastro, login, logout e proteção de rotas). Os fluxos de conta e transações ainda não foram implementados — pastas ainda vazias são versionadas via `.gitkeep`.
 
 ## Como rodar
 
@@ -37,7 +37,8 @@ A aplicação sobe em `http://localhost:3000` e espera o backend em `http://loca
 - **Mutações via Server Actions.** Cadastro, login, depósito, transferência e reversão ficam em `features/<dominio>/actions/` e chamam a API a partir do servidor, sem expor token nem lógica de integração ao client.
 - **Leituras via services.** `features/<dominio>/services/` expõe funções puras de acesso à API, consumidas pelas actions no servidor e pelo React Query no client quando necessário.
 - **Dois clientes HTTP.** `@/lib/api/cliente-servidor` roda no servidor (baseURL `API_URL`) e repassa o cookie httpOnly de sessão a mão; `@/lib/api/cliente-navegador` roda no browser (baseURL `NEXT_PUBLIC_API_URL`, `withCredentials`). Ambos normalizam falhas em `ErroApi`, que entende o formato `{ statusCode, codigo, mensagem }` do backend.
-- **`src/middleware.ts`** protegerá as rotas de `(dashboard)`, redirecionando usuários sem sessão para `/login`.
+- **`src/middleware.ts`** protege as rotas de `(dashboard)`, redirecionando usuários sem sessão para `/login` e usuários autenticados para fora de `/login` e `/registro`.
+- **Sessão em cookie httpOnly.** Como as Server Actions chamam a API de servidor para servidor, o `Set-Cookie` do Nest não chega ao browser: a action de login grava o cookie `SESSION_COOKIE_NAME` manualmente via `cookies()`, usando `tokenAcesso` e `expiraEm` do corpo da resposta.
 - **Alias de import:** `@/*` aponta para `src/*`.
 
 ## Scripts
