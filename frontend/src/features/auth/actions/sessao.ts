@@ -7,7 +7,7 @@ import { converterParaErroApi } from '@/lib/api/erros';
 import { ehEmailValido, ehTextoPreenchido, obterTextoDoFormulario } from '@/utils/validacao';
 import type { CredenciaisLogin } from '@/types/auth';
 import { autenticar, encerrarSessaoNaApi } from '../services/autenticacao-servico';
-import { definirCookieSessao, removerCookieSessao } from '../services/sessao-servico';
+import { definirCookieSessao, definirCookieUsuario, removerCookieSessao, removerCookieUsuario } from '../services/sessao-servico';
 import type { CampoLogin, EstadoFormularioLogin } from '../types';
 
 const MENSAGEM_CREDENCIAIS_INVALIDAS = 'E-mail ou senha invalidos.';
@@ -57,8 +57,9 @@ export async function entrar(_estadoAnterior: EstadoFormularioLogin, dadosFormul
   }
 
   try {
-    const { tokenAcesso, expiraEm } = await autenticar(credenciais);
+    const { tokenAcesso, expiraEm, usuario } = await autenticar(credenciais);
     await definirCookieSessao(tokenAcesso, expiraEm);
+    await definirCookieUsuario({ nome: usuario.nome, email: usuario.email }, expiraEm);
   } catch (erro) {
     return tratarErro(erro, credenciais);
   }
@@ -69,6 +70,7 @@ export async function entrar(_estadoAnterior: EstadoFormularioLogin, dadosFormul
 export async function sair(): Promise<void> {
   await encerrarSessaoNaApi().catch(() => undefined);
   await removerCookieSessao();
+  await removerCookieUsuario();
 
   redirect(ROTAS.login);
 }

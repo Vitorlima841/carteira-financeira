@@ -4,6 +4,8 @@ export const ROTAS = {
   registro: '/registro',
   conta: '/conta',
   transacoes: '/transacoes',
+  depositar: '/transacoes/depositar',
+  transferir: '/transacoes/transferir',
   perfil: '/perfil',
 } as const;
 

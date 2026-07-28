@@ -11,3 +11,8 @@ export interface RespostaAutenticacao {
   expiraEm: DataIso;
   usuario: Usuario;
 }
+
+export interface UsuarioSessao {
+  nome: string;
+  email: string;
+}
