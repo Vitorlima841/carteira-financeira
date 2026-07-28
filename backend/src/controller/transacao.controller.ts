@@ -1,10 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post } from '@nestjs/common';
+import { Body, Controller, Get, HttpCode, HttpStatus, Param, ParseUUIDPipe, Post, Query } from '@nestjs/common';
 import { ApiBearerAuth, ApiOperation, ApiResponse, ApiTags } from '@nestjs/swagger';
 import { TransacaoService } from '../service/transacao/transacao.service';
 import { CriarDepositoDto } from '../model/transacao/DTO/criar-deposito.dto';
 import { CriarTransferenciaDto } from '../model/transacao/DTO/criar-transferencia.dto';
 import { TransacaoRespostaDto } from '../model/transacao/DTO/transacao-resposta.dto';
 import { UsuarioAutenticado } from '../model/auth/interface/payload-jwt.interface';
+import { ExtratoPaginadoDto } from '../model/transacao/DTO/extrato-paginado.dto';
+import { FiltroTransacaoDto } from '../model/transacao/DTO/filtro-transacao.dto';
 import { UsuarioLogado } from '../shared/decorators/usuario-logado.decorator';
 
 @ApiTags('Transações')
@@ -46,5 +48,23 @@ export class TransacaoController {
   async estornar(@UsuarioLogado() usuarioAutenticado: UsuarioAutenticado, @Param('id', ParseUUIDPipe) id: string): Promise<TransacaoRespostaDto> {
     const estorno = await this.transacaoService.estornar(usuarioAutenticado.id, id);
     return TransacaoRespostaDto.apartirDoDominio(estorno);
+  }
+
+  @Get()
+  @ApiOperation({ summary: 'Lista o extrato paginado da conta do usuário autenticado' })
+  @ApiResponse({ status: HttpStatus.OK, type: ExtratoPaginadoDto })
+  async listarExtrato(@UsuarioLogado() usuarioAutenticado: UsuarioAutenticado, @Query() filtroTransacaoDto: FiltroTransacaoDto): Promise<ExtratoPaginadoDto> {
+    const [transacoes, total] = await this.transacaoService.listarExtrato(usuarioAutenticado.id, filtroTransacaoDto);
+    return ExtratoPaginadoDto.apartirDoDominio(transacoes, total, filtroTransacaoDto.pagina, filtroTransacaoDto.limite);
+  }
+
+  @Get('/:id')
+  @ApiOperation({ summary: 'Detalha uma transação com seus lançamentos' })
+  @ApiResponse({ status: HttpStatus.OK, type: TransacaoRespostaDto })
+  @ApiResponse({ status: HttpStatus.FORBIDDEN, description: 'Usuário não participa da transação' })
+  @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Transação não encontrada' })
+  async obterPorId(@UsuarioLogado() usuarioAutenticado: UsuarioAutenticado, @Param('id', ParseUUIDPipe) id: string): Promise<TransacaoRespostaDto> {
+    const { transacao, lancamentos } = await this.transacaoService.obterPorId(usuarioAutenticado.id, id);
+    return TransacaoRespostaDto.apartirDoDominio(transacao, lancamentos);
   }
 }

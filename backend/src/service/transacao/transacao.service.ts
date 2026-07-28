@@ -26,6 +26,8 @@ import { UsuarioRepositorioTypeOrm } from '../../repository/usuario.repository';
 import { UnidadeTrabalhoService } from '../../shared/database/unidade-trabalho.service';
 import { ConstantUtils } from '../../shared/utils/constant.utils';
 import { ContaService } from '../conta/conta.service';
+import { FiltroTransacaoDto } from '../../model/transacao/DTO/filtro-transacao.dto';
+import { TransacaoDetalhada } from '../../model/transacao/interface/transacao-detalhada.interface';
 
 @Injectable()
 export class TransacaoService {
@@ -37,6 +39,24 @@ export class TransacaoService {
     private readonly contaService: ContaService,
     private readonly unidadeTrabalho: UnidadeTrabalhoService,
   ) {}
+
+  async listarExtrato(usuarioId: string, filtro: FiltroTransacaoDto): Promise<[Transacao[], number]> {
+    const conta = await this.contaService.obterPorUsuarioId(usuarioId);
+    return this.transacaoRepositorio.listarPorConta(conta.id, filtro);
+  }
+
+  async obterPorId(usuarioId: string, transacaoId: string): Promise<TransacaoDetalhada> {
+    const conta = await this.contaService.obterPorUsuarioId(usuarioId);
+
+    const transacao = await this.transacaoRepositorio.buscarPorId(transacaoId);
+    if (!transacao) {
+      throw new TransacaoNaoEncontradaError();
+    }
+    this.garantirParticipacao(transacao, conta.id);
+
+    const lancamentos = await this.lancamentoRepositorio.listarPorTransacaoId(transacao.id);
+    return { transacao, lancamentos };
+  }
 
   async depositar(usuarioId: string, dados: CriarDepositoDto): Promise<Transacao> {
     const valor = this.converterValor(dados.valor);
