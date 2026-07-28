@@ -3,12 +3,11 @@ node_modules
 out
 build
 next-env.d.ts
+*.tsbuildinfo
 *.log
-.env
 .env
 coverage
 playwright-report
 test-results
 .DS_Store
-.claude
 /.idea
