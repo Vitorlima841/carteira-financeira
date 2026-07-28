@@ -1,6 +1,6 @@
 export const TEMPO_LIMITE_REQUISICAO_MS = 15_000;
 
-const URL_API_PADRAO = 'http://localhost:3001';
+const URL_API_PADRAO = 'http://localhost:3002';
 
 function resolverUrl(valor: string | undefined, nomeVariavel: string): string {
   if (valor) {
