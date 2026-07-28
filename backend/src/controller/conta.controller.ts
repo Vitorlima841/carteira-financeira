@@ -16,9 +16,7 @@ export class ContaController {
   @ApiResponse({ status: HttpStatus.OK, type: ContaRespostaDto })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Token inválido ou ausente' })
   @ApiResponse({ status: HttpStatus.NOT_FOUND, description: 'Conta não encontrada' })
-  async buscarContaDoUsuarioLogado(
-    @UsuarioLogado() usuarioAutenticado: UsuarioAutenticado,
-  ): Promise<ContaRespostaDto> {
+  async buscarContaDoUsuarioLogado(@UsuarioLogado() usuarioAutenticado: UsuarioAutenticado): Promise<ContaRespostaDto> {
     const conta = await this.contaService.obterPorUsuarioId(usuarioAutenticado.id);
     return ContaRespostaDto.apartirDoDominio(conta);
   }

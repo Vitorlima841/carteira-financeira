@@ -20,6 +20,15 @@ export class ContaRepositorioTypeOrm {
     return entidadeOrm ? this.paraDominio(entidadeOrm) : null;
   }
 
+  /**
+   * Bloqueia a linha da conta com SELECT ... FOR UPDATE. Deve ser chamado sempre em ordem
+   * crescente de id quando houver mais de uma conta envolvida, para evitar deadlock.
+   */
+  async bloquearPorId(id: string, manager: EntityManager): Promise<Conta | null> {
+    const entidadeOrm = await manager.createQueryBuilder(Conta, 'conta').setLock('pessimistic_write').where('conta.id = :id', { id }).getOne();
+    return entidadeOrm ? this.paraDominio(entidadeOrm) : null;
+  }
+
   async salvar(conta: Conta, manager?: EntityManager): Promise<void> {
     await this.obterRepositorio(manager).save(this.paraOrm(conta));
   }
