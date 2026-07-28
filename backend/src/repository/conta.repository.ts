@@ -10,23 +10,17 @@ export class ContaRepositorioTypeOrm {
     private readonly repositorioOrm: Repository<Conta>,
   ) {}
 
-  async buscarPorId(id: string, manager?: EntityManager): Promise<Conta | null> {
-    const entidadeOrm = await this.obterRepositorio(manager).findOne({ where: { id } });
-    return entidadeOrm ? this.paraDominio(entidadeOrm) : null;
-  }
-
   async buscarPorUsuarioId(usuarioId: string, manager?: EntityManager): Promise<Conta | null> {
-    const entidadeOrm = await this.obterRepositorio(manager).findOne({ where: { usuarioId } });
-    return entidadeOrm ? this.paraDominio(entidadeOrm) : null;
+    const entidade = await this.obterRepositorio(manager).findOne({ where: { usuarioId } });
+    return entidade ? this.paraDominio(entidade) : null;
   }
 
-  /**
-   * Bloqueia a linha da conta com SELECT ... FOR UPDATE. Deve ser chamado sempre em ordem
-   * crescente de id quando houver mais de uma conta envolvida, para evitar deadlock.
-   */
   async bloquearPorId(id: string, manager: EntityManager): Promise<Conta | null> {
-    const entidadeOrm = await manager.createQueryBuilder(Conta, 'conta').setLock('pessimistic_write').where('conta.id = :id', { id }).getOne();
-    return entidadeOrm ? this.paraDominio(entidadeOrm) : null;
+    const entidade = await manager.createQueryBuilder(Conta, 'conta')
+      .setLock('pessimistic_write')
+      .where('conta.id = :id', { id })
+      .getOne();
+    return entidade ? this.paraDominio(entidade) : null;
   }
 
   async salvar(conta: Conta, manager?: EntityManager): Promise<void> {
@@ -37,25 +31,25 @@ export class ContaRepositorioTypeOrm {
     return manager ? manager.getRepository(Conta) : this.repositorioOrm;
   }
 
-  private paraDominio(entidadeOrm: Conta): Conta {
+  private paraDominio(entidade: Conta): Conta {
     const conta = new Conta();
 
-    conta.id = entidadeOrm.id;
-    conta.usuarioId = entidadeOrm.usuarioId;
-    conta.saldoCache = entidadeOrm.saldoCache;
-    conta.moeda = entidadeOrm.moeda;
-    conta.criadoEm = entidadeOrm.criadoEm;
-    conta.atualizadoEm = entidadeOrm.atualizadoEm;
+    conta.id = entidade.id;
+    conta.usuarioId = entidade.usuarioId;
+    conta.saldoCache = entidade.saldoCache;
+    conta.moeda = entidade.moeda;
+    conta.criadoEm = entidade.criadoEm;
+    conta.atualizadoEm = entidade.atualizadoEm;
 
     return conta;
   }
 
   private paraOrm(conta: Conta): Conta {
-    const entidadeOrm = new Conta();
-    entidadeOrm.id = conta.id;
-    entidadeOrm.usuarioId = conta.usuarioId;
-    entidadeOrm.saldoCache = conta.saldoCache;
-    entidadeOrm.moeda = conta.moeda;
-    return entidadeOrm;
+    const entidade = new Conta();
+    entidade.id = conta.id;
+    entidade.usuarioId = conta.usuarioId;
+    entidade.saldoCache = conta.saldoCache;
+    entidade.moeda = conta.moeda;
+    return entidade;
   }
 }

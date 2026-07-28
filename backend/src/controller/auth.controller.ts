@@ -18,10 +18,7 @@ export class AuthController {
   @ApiOperation({ summary: 'Autentica o usuário e gera o token de acesso' })
   @ApiResponse({ status: HttpStatus.OK, type: RespostaAutenticacaoDto })
   @ApiResponse({ status: HttpStatus.UNAUTHORIZED, description: 'Credenciais inválidas' })
-  async login(
-    @Body() authDto: AuthDto,
-    @Res({ passthrough: true }) resposta: Response,
-  ): Promise<RespostaAutenticacaoDto> {
+  async login(@Body() authDto: AuthDto, @Res({ passthrough: true }) resposta: Response): Promise<RespostaAutenticacaoDto> {
     return this.authService.autenticar(authDto, resposta);
   }
 

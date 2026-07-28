@@ -12,11 +12,7 @@ export class RespostaAutenticacaoDto {
   @ApiProperty({ description: 'Dados do usuário autenticado', type: UsuarioRespostaDto })
   usuario: UsuarioRespostaDto;
 
-  static apartirDoDominio(
-    usuario: Usuario,
-    tokenAcesso: string,
-    expiraEm: Date,
-  ): RespostaAutenticacaoDto {
+  static apartirDoDominio(usuario: Usuario, tokenAcesso: string, expiraEm: Date): RespostaAutenticacaoDto {
     const dto = new RespostaAutenticacaoDto();
     dto.tokenAcesso = tokenAcesso;
     dto.expiraEm = expiraEm;

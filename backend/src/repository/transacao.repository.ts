@@ -16,10 +16,6 @@ export class TransacaoRepositorioTypeOrm {
     return entidadeOrm ? this.paraDominio(entidadeOrm) : null;
   }
 
-  /**
-   * Bloqueia a linha da transação com SELECT ... FOR UPDATE, serializando estornos
-   * concorrentes da mesma transação.
-   */
   async bloquearPorId(id: string, manager: EntityManager): Promise<Transacao | null> {
     const entidadeOrm = await manager.createQueryBuilder(Transacao, 'transacao').setLock('pessimistic_write').where('transacao.id = :id', { id }).getOne();
     return entidadeOrm ? this.paraDominio(entidadeOrm) : null;

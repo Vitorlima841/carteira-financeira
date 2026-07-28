@@ -8,7 +8,6 @@ import { DirecaoLancamento } from '../../model/lancamento/enum/direcao-lancament
 import { Lancamento } from '../../model/lancamento/lancamento.entity';
 import { CriarDepositoDto } from '../../model/transacao/DTO/criar-deposito.dto';
 import { CriarTransferenciaDto } from '../../model/transacao/DTO/criar-transferencia.dto';
-import { FiltroTransacaoDto } from '../../model/transacao/DTO/filtro-transacao.dto';
 import { StatusTransacao } from '../../model/transacao/enum/status-transacao.enum';
 import { TipoTransacao } from '../../model/transacao/enum/tipo-transacao.enum';
 import { AcessoNegadoError } from '../../model/transacao/error/acesso-negado.error';
@@ -18,7 +17,6 @@ import { TransacaoNaoReversivelError } from '../../model/transacao/error/transac
 import { TransferenciaParaMesmaContaError } from '../../model/transacao/error/transferencia-para-mesma-conta.error';
 import { ValorInvalidoError } from '../../model/transacao/error/valor-invalido.error';
 import { DadosLancamentoDuplo } from '../../model/transacao/interface/dados-lancamento-duplo.interface';
-import { TransacaoDetalhada } from '../../model/transacao/interface/transacao-detalhada.interface';
 import { Transacao } from '../../model/transacao/transacao.entity';
 import { UsuarioNaoEncontradoError } from '../../model/usuario/error/usuario-nao-encontrado.error';
 import { ContaRepositorioTypeOrm } from '../../repository/conta.repository';
@@ -79,24 +77,6 @@ export class TransacaoService {
     });
   }
 
-  async listarExtrato(usuarioId: string, filtro: FiltroTransacaoDto): Promise<[Transacao[], number]> {
-    const conta = await this.contaService.obterPorUsuarioId(usuarioId);
-    return this.transacaoRepositorio.listarPorConta(conta.id, filtro);
-  }
-
-  async obterPorId(usuarioId: string, transacaoId: string): Promise<TransacaoDetalhada> {
-    const conta = await this.contaService.obterPorUsuarioId(usuarioId);
-
-    const transacao = await this.transacaoRepositorio.buscarPorId(transacaoId);
-    if (!transacao) {
-      throw new TransacaoNaoEncontradaError();
-    }
-    this.garantirParticipacao(transacao, conta.id);
-
-    const lancamentos = await this.lancamentoRepositorio.listarPorTransacaoId(transacao.id);
-    return { transacao, lancamentos };
-  }
-
   async estornar(usuarioId: string, transacaoId: string): Promise<Transacao> {
     return this.unidadeTrabalho.executar(async (manager) => {
       const conta = await this.contaService.obterPorUsuarioId(usuarioId, manager);
@@ -124,11 +104,6 @@ export class TransacaoService {
     });
   }
 
-  /**
-   * Núcleo do livro-razão: bloqueia as contas envolvidas, valida a operação e persiste a
-   * transação com seus lançamentos (1 no depósito, 2 na transferência/estorno), mantendo o
-   * saldoCache das contas em dia. Tudo no mesmo EntityManager, portanto commit tudo ou nada.
-   */
   private async registrarLancamentoDuplo(manager: EntityManager, dados: DadosLancamentoDuplo): Promise<Transacao> {
     if (!dados.valor.isFinite() || dados.valor.lessThanOrEqualTo(0)) {
       throw new ValorInvalidoError(dados.valor.toString());
@@ -137,8 +112,7 @@ export class TransacaoService {
     const contasBloqueadas = await this.bloquearContas(manager, [dados.contaOrigemId, dados.contaDestinoId]);
     const valorFormatado = dados.valor.toFixed(ConstantUtils.ESCALA_MONETARIA);
 
-    // O estorno é a única operação que pode deixar a conta negativa: o destinatário original
-    // pode já ter gasto o valor recebido, e ainda assim a devolução precisa acontecer.
+    // O estorno é a única operação que pode deixar a conta negativa
     if (dados.contaOrigemId && dados.tipo !== TipoTransacao.ESTORNO) {
       const saldoOrigem = new Decimal(this.obterConta(contasBloqueadas, dados.contaOrigemId).saldoCache);
       if (saldoOrigem.lessThan(dados.valor)) {
@@ -192,11 +166,6 @@ export class TransacaoService {
     await this.contaRepositorio.salvar(conta, manager);
   }
 
-  /**
-   * Bloqueia as contas envolvidas em ordem crescente de id. A ordem é o que evita deadlock
-   * quando duas transferências cruzadas (A→B e B→A) acontecem ao mesmo tempo: ambas pedem o
-   * mesmo lock primeiro, então uma espera a outra em vez de travarem em ciclo.
-   */
   private async bloquearContas(manager: EntityManager, ids: (string | undefined)[]): Promise<Map<string, Conta>> {
     const idsOrdenados = [...new Set(ids.filter((id): id is string => Boolean(id)))].sort();
     const contas = new Map<string, Conta>();

@@ -24,9 +24,7 @@ async function bootstrap() {
 
   const documentoSwagger = new DocumentBuilder()
     .setTitle('API Carteira Financeira')
-    .setDescription(
-      'API de carteira financeira digital com livro-razão de partida dobrada (double-entry ledger)',
-    )
+    .setDescription('API de carteira financeira digital com livro-razão de partida dobrada (double-entry ledger)')
     .setVersion('1.0')
     .addBearerAuth()
     .addCookieAuth('jwt_token')
@@ -34,6 +32,6 @@ async function bootstrap() {
   const documento = SwaggerModule.createDocument(app, documentoSwagger);
   SwaggerModule.setup('documentacao', app, documento);
 
-  await app.listen(configService.get<number>('porta', 3000));
+  await app.listen(configService.get<number>('porta', 3001));
 }
 bootstrap();

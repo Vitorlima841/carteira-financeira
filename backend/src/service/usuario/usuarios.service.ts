@@ -20,14 +20,6 @@ export class UsuariosService {
     private readonly unidadeTrabalho: UnidadeTrabalhoService,
   ) {}
 
-  async buscarUsuarioLogado(usuarioId: string): Promise<Usuario> {
-    const usuario = await this.usuarioRepositorio.buscarPorId(usuarioId);
-    if (!usuario) {
-      throw new UsuarioNaoEncontradoError();
-    }
-    return usuario;
-  }
-
   async cadastrar(criarUsuarioDto: CriarUsuarioDto): Promise<Usuario> {
     const senhaHash = await bcrypt.hash(criarUsuarioDto.senha, ConstantUtils.ROUNDS_SALT_SENHA);
 
@@ -53,7 +45,7 @@ export class UsuariosService {
     }
 
     const agora = new Date();
-    const usuario =  new Usuario();
+    const usuario = new Usuario();
 
     usuario.id = randomUUID();
     usuario.nome = dados.nome;
