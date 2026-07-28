@@ -1,11 +1,17 @@
 const PADRAO_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const PADRAO_VALOR_MONETARIO = /^\d+(\.\d{1,2})?$/;
+
 export function ehTextoPreenchido(valor: string): boolean {
   return valor.trim().length > 0;
 }
 
 export function ehEmailValido(valor: string): boolean {
   return PADRAO_EMAIL.test(valor);
+}
+
+export function ehValorMonetarioValido(valor: string): boolean {
+  return PADRAO_VALOR_MONETARIO.test(valor) && Number(valor) > 0;
 }
 
 export function obterTextoDoFormulario(dadosFormulario: FormData, campo: string): string {

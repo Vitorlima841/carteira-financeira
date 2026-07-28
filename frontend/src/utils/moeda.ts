@@ -13,6 +13,10 @@ function criarFormatador(moeda: string): Intl.NumberFormat {
   return new Intl.NumberFormat(LOCALIDADE_PADRAO, { style: 'currency', currency: moeda });
 }
 
+export function normalizarValorMonetario(valor: string): ValorMonetario {
+  return valor.trim().replace(',', '.');
+}
+
 export function formatarMoeda(valor: ValorMonetario | number, moeda: string = MOEDA_PADRAO): string {
   const numero = normalizarValor(valor);
 

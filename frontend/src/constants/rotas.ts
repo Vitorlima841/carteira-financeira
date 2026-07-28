@@ -9,6 +9,8 @@ export const ROTAS = {
   perfil: '/perfil',
 } as const;
 
+export const ROTA_LAYOUT_PAINEL = '/(dashboard)';
+
 export const ROTAS_PROTEGIDAS: readonly string[] = [ROTAS.conta, ROTAS.transacoes, ROTAS.perfil];
 
 export const ROTAS_AUTENTICACAO: readonly string[] = [ROTAS.login, ROTAS.registro];
