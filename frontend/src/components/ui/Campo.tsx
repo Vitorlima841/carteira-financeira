@@ -9,38 +9,37 @@ const CLASSES_BASE =
 const CLASSES_NORMAL = 'border-slate-300 focus:border-emerald-600 focus:ring-emerald-600/30';
 const CLASSES_ERRO = 'border-red-500 focus:border-red-600 focus:ring-red-600/30';
 
-export interface InputProps extends ComponentPropsWithRef<'input'> {
-  label?: string;
-  /** Texto de apoio; some quando ha `error`. */
-  hint?: string;
-  error?: string;
+export interface CampoProps extends ComponentPropsWithRef<'input'> {
+  rotulo?: string;
+  dica?: string;
+  erro?: string;
 }
 
-export function Input({ label, hint, error, id, className, ...props }: InputProps) {
+export function Campo({ rotulo, dica, erro, id, className, ...props }: CampoProps) {
   const idGerado = useId();
-  const idInput = id ?? idGerado;
-  const idMensagem = `${idInput}-mensagem`;
-  const temMensagem = Boolean(error ?? hint);
+  const idCampo = id ?? idGerado;
+  const idMensagem = `${idCampo}-mensagem`;
+  const temMensagem = Boolean(erro ?? dica);
 
   return (
     <div className="flex flex-col gap-1.5">
-      {label && (
-        <label htmlFor={idInput} className="text-sm font-medium text-slate-700">
-          {label}
+      {rotulo && (
+        <label htmlFor={idCampo} className="text-sm font-medium text-slate-700">
+          {rotulo}
         </label>
       )}
 
       <input
-        id={idInput}
-        aria-invalid={error ? true : undefined}
+        id={idCampo}
+        aria-invalid={erro ? true : undefined}
         aria-describedby={temMensagem ? idMensagem : undefined}
-        className={cn(CLASSES_BASE, error ? CLASSES_ERRO : CLASSES_NORMAL, className)}
+        className={cn(CLASSES_BASE, erro ? CLASSES_ERRO : CLASSES_NORMAL, className)}
         {...props}
       />
 
       {temMensagem && (
-        <p id={idMensagem} className={cn('text-xs', error ? 'text-red-600' : 'text-slate-500')} role={error ? 'alert' : undefined}>
-          {error ?? hint}
+        <p id={idMensagem} className={cn('text-xs', erro ? 'text-red-600' : 'text-slate-500')} role={erro ? 'alert' : undefined}>
+          {erro ?? dica}
         </p>
       )}
     </div>

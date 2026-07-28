@@ -1,4 +1,3 @@
-/** Tempo maximo de espera por resposta da API. */
 export const TEMPO_LIMITE_REQUISICAO_MS = 15_000;
 
 const URL_API_PADRAO = 'http://localhost:3001';
@@ -15,16 +14,10 @@ function resolverUrl(valor: string | undefined, nomeVariavel: string): string {
   return URL_API_PADRAO;
 }
 
-/**
- * URL usada pelo cliente de servidor (Server Actions / Server Components).
- * Em Docker costuma apontar para o host do servico, e nao para localhost —
- * por isso `API_URL` tem precedencia sobre `NEXT_PUBLIC_API_URL`.
- */
 export function obterUrlApiServidor(): string {
   return resolverUrl(process.env.API_URL ?? process.env.NEXT_PUBLIC_API_URL, 'API_URL');
 }
 
-/** URL usada pelo cliente de navegador; precisa estar exposta ao bundle. */
 export function obterUrlApiNavegador(): string {
   return resolverUrl(process.env.NEXT_PUBLIC_API_URL, 'NEXT_PUBLIC_API_URL');
 }

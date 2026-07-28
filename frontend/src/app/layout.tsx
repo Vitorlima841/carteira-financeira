@@ -8,7 +8,7 @@ export const metadata: Metadata = {
   description: 'Carteira financeira digital',
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
+export default function LayoutRaiz({ children }: { children: ReactNode }) {
   return (
     <html lang="pt-BR">
       <body className="bg-slate-50 text-slate-900 antialiased">

@@ -1,6 +1,5 @@
 import type { DataIso } from './api';
 
-/** Espelha `UsuarioRespostaDto` do backend. */
 export interface Usuario {
   id: string;
   nome: string;
@@ -8,7 +7,6 @@ export interface Usuario {
   criadoEm: DataIso;
 }
 
-/** Corpo de `POST /usuarios` (`CriarUsuarioDto`). */
 export interface CriarUsuarioPayload {
   nome: string;
   email: string;

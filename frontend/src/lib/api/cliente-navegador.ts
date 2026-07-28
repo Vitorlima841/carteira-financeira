@@ -2,12 +2,6 @@ import axios, { type AxiosInstance } from 'axios';
 import { TEMPO_LIMITE_REQUISICAO_MS, obterUrlApiNavegador } from './config';
 import { converterParaErroApi } from './erros';
 
-/**
- * Cliente HTTP para uso no navegador (React Query, hooks de UI).
- *
- * `withCredentials` faz o cookie httpOnly de sessao viajar junto — o backend
- * habilita CORS com `credentials: true`, entao nao ha token para anexar aqui.
- */
 export const clienteApiNavegador: AxiosInstance = axios.create({
   baseURL: obterUrlApiNavegador(),
   timeout: TEMPO_LIMITE_REQUISICAO_MS,

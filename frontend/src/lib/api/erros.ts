@@ -13,13 +13,6 @@ const MENSAGENS_POR_STATUS: Record<number, string> = {
   500: 'Erro interno no servidor.',
 };
 
-/**
- * Versao serializavel do `ErroApi`.
- *
- * Server Actions so devolvem dados serializaveis ao client, entao instancias
- * de `ErroApi` precisam virar objeto simples antes de cruzar essa fronteira
- * (e la o `instanceof` deixa de valer).
- */
 export interface ErroApiSerializado {
   status: number;
   codigo: CodigoErro;
@@ -33,12 +26,9 @@ interface DadosErroApi {
   mensagens: string[];
 }
 
-/** Erro normalizado de qualquer falha vinda da API NestJS. */
 export class ErroApi extends Error {
-  /** Status HTTP; `0` quando a resposta nao chegou (rede, timeout, cancelamento). */
   readonly status: number;
   readonly codigo: CodigoErro;
-  /** Todas as mensagens; o `ValidationPipe` do backend devolve uma por campo. */
   readonly mensagens: string[];
 
   constructor({ status, codigo, mensagens }: DadosErroApi) {
@@ -50,7 +40,6 @@ export class ErroApi extends Error {
     this.mensagens = lista;
   }
 
-  /** Falha atribuivel ao cliente (4xx): repetir a requisicao nao resolve. */
   get ehErroDeCliente(): boolean {
     return this.status >= 400 && this.status < 500;
   }
@@ -95,11 +84,6 @@ function codigoPorStatus(status: number, mensagemOriginal: string | string[]): C
   return status === 400 && Array.isArray(mensagemOriginal) ? 'ERRO_DE_VALIDACAO' : 'ERRO_HTTP';
 }
 
-/**
- * Converte qualquer falha (resposta do backend, erro de rede ou excecao
- * inesperada) em um `ErroApi`, entendendo o formato
- * `{ statusCode, codigo, mensagem }` do `FiltroExcecaoHttp`.
- */
 export function converterParaErroApi(erro: unknown): ErroApi {
   if (ehErroApi(erro)) {
     return erro;
