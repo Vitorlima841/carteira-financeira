@@ -2,17 +2,35 @@
 
 Interface web da carteira financeira digital, construída em **Next.js (App Router) + React + TypeScript + Tailwind CSS**, consumindo a API **NestJS** do diretório `backend/`.
 
-> Estado atual: **infraestrutura base** pronta (cliente HTTP, tipos espelhando os DTOs do backend, React Query e design system em `components/ui`) e **fluxo de autenticação** implementado (cadastro, login, logout e proteção de rotas). Os fluxos de conta e transações ainda não foram implementados — pastas ainda vazias são versionadas via `.gitkeep`.
+> Estado atual: **infraestrutura base** pronta (cliente HTTP, tipos espelhando os DTOs do backend, React Query e design system em `components/ui`), **fluxo de autenticação** implementado (cadastro, login, logout e proteção de rotas) e telas iniciais de **conta** (consulta de saldo) e **transações** (depósito e transferência). Extrato, detalhe/estorno de transação e perfil ainda não têm tela — pastas ainda vazias são versionadas via `.gitkeep`.
+
+## Tecnologias utilizadas
+
+- **Next.js 15** (App Router) + **React 19** + **TypeScript**
+- **Tailwind CSS** — estilização utilitária e design system em `components/ui`
+- **TanStack React Query** — cache e sincronização de dados no client
+- **Zustand** — estado global de UI
+- **Axios** — clientes HTTP (servidor e browser)
+- **ESLint + Prettier** — lint e formatação
+- **Docker** — containerização (esqueleto, ver seção abaixo)
+
+## Funcionalidades
+
+- **Cadastro e login** de usuário, com sessão via cookie JWT httpOnly.
+- **Logout** e **proteção de rotas**: `middleware.ts` redireciona quem não está autenticado para `/login` e quem já está logado para fora de `/login`/`/registro`.
+- **Consulta de saldo** da conta do usuário autenticado.
+- **Depósito** e **transferência** entre contas, via formulários que chamam Server Actions.
+- Em falta (backend já expõe, frontend ainda não): **extrato** de transações, **detalhe/estorno** de uma transação e **perfil** do usuário.
 
 ## Como rodar
 
 ```bash
 npm install
-cp .env .env.local
+cp .env.example .env.local
 npm run dev
 ```
 
-A aplicação sobe em `http://localhost:3000` e espera o backend em `http://localhost:3001` (ver `.env.example`).
+A aplicação sobe em `http://localhost:3001` e espera o backend em `http://localhost:3000` (ver `.env.example`).
 
 ## Estrutura de pastas
 
