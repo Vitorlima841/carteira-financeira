@@ -19,8 +19,7 @@ API REST da carteira financeira digital, construída em **NestJS + TypeScript**,
 ### Opção 1 — Docker (API + banco)
 
 ```bash
-cp .env
-docker-compose up --build
+docker-compose up -d
 ```
 
 Sobe o Postgres e a API já com as migrations aplicadas automaticamente antes do `node dist/main` (ver `Dockerfile`). A API fica disponível em `http://localhost:3000`.
@@ -31,7 +30,6 @@ Requer um PostgreSQL acessível (pode ser só o serviço `postgres` do `docker-c
 
 ```bash
 npm install
-cp .env
 npm run migration:run
 npm run start:dev
 ```
