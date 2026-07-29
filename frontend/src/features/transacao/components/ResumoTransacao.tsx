@@ -1,19 +1,7 @@
-import { StatusTransacao, TipoTransacao, type Transacao } from '@/types/transacao';
+import type { Transacao } from '@/types/transacao';
 import { formatarDataHora } from '@/utils/data';
 import { formatarMoeda } from '@/utils/moeda';
-
-const ROTULOS_TIPO: Record<TipoTransacao, string> = {
-  [TipoTransacao.DEPOSITO]: 'Deposito',
-  [TipoTransacao.TRANSFERENCIA]: 'Transferencia',
-  [TipoTransacao.ESTORNO]: 'Estorno',
-};
-
-const ROTULOS_STATUS: Record<StatusTransacao, string> = {
-  [StatusTransacao.PENDENTE]: 'Pendente',
-  [StatusTransacao.CONCLUIDA]: 'Concluida',
-  [StatusTransacao.ESTORNADA]: 'Estornada',
-  [StatusTransacao.FALHOU]: 'Falhou',
-};
+import { ROTULOS_STATUS, ROTULOS_TIPO } from '../rotulos';
 
 export interface ResumoTransacaoProps {
   transacao: Transacao;
@@ -40,11 +28,6 @@ export function ResumoTransacao({ transacao }: ResumoTransacaoProps) {
       <div className="flex justify-between gap-4">
         <dt>Data</dt>
         <dd className="font-medium">{formatarDataHora(transacao.criadoEm)}</dd>
-      </div>
-
-      <div className="flex justify-between gap-4">
-        <dt>Identificador</dt>
-        <dd className="font-mono text-xs">{transacao.id}</dd>
       </div>
     </dl>
   );

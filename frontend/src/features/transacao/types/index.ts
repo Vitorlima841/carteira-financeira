@@ -14,3 +14,5 @@ export interface EstadoFormularioTransacao<TCampo extends string> extends Estado
 export type EstadoFormularioDeposito = EstadoFormularioTransacao<CampoDeposito>;
 
 export type EstadoFormularioTransferencia = EstadoFormularioTransacao<CampoTransferencia>;
+
+export type EstadoEstorno = EstadoFormularioTransacao<never>;
