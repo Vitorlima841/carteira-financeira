@@ -26,7 +26,7 @@ Interface web da carteira financeira digital, construída em **Next.js (App Rout
 
 ```bash
 npm install
-cp .env.example .env.local
+cp .env.local
 npm run dev
 ```
 
